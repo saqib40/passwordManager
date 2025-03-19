@@ -10,6 +10,7 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { createTheme } from '@mui/material/styles';
+import OTP from '../components/otfverify';
 
 // Custom theme
 const theme = createTheme({
@@ -100,6 +101,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
+  const [otpOpen, setOtpOpen] = useState(false); // Add OTP modal state
   const navigate = useNavigate();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -128,8 +130,9 @@ export default function Login() {
           alert(responseData.message);
         }
         if (response.ok) {
-          localStorage.setItem('myToken', responseData.token);
-          navigate('/dashboard');
+          //localStorage.setItem('myToken', responseData.token);
+          //navigate('/dashboard');
+          setOtpOpen(true);
         }
       } catch (error) {
         console.error('An unexpected error occurred:', error);
@@ -191,6 +194,14 @@ export default function Login() {
           </Box>
         </FormBox>
       </LoginContainer>
+      <OTP
+        open={otpOpen}
+        onClose={() => {
+          setOtpOpen(false);
+          navigate('/dashboard'); // Navigate after OTP verification
+        }}
+        propUrl="http://localhost:4000/v1/verifyLoginOTP"
+      />
     </ThemeProvider>
   );
 }

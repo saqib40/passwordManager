@@ -125,11 +125,11 @@ exports.signup = async (req, res) => {
 
         // Send OTP
         await transporter.sendMail({
-            from: "Password Manager",
+            from: "Password Manager <ambernoah44@gmail.com>",
             to: email,
             subject: "This OTP will expire in 2 minutes",
             html: `<h2>Your OTP is</h2> <p>${otp}</p>`,
-        });
+        })
 
         return res.status(200).json({
             success: true,

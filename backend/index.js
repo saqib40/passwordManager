@@ -6,6 +6,9 @@ const app = express();
 require("dotenv").config();
 const PORT = process.env.PORT || 4000;
 
+const cors = require("cors");
+app.use(cors());
+
 // Use express-session for session management
 app.use(session({
     secret: process.env.SESSION_SECRET,

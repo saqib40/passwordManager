@@ -10,6 +10,7 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { createTheme } from '@mui/material/styles';
+import OTP from '../components/otfverify';
 
 // Custom theme (same as Login)
 const theme = createTheme({
@@ -102,6 +103,7 @@ export default function Signup() {
   const [usernameError, setUsernameError] = useState(false);
   const [emailError, setEmailError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
+  const [otpOpen, setOtpOpen] = useState(false); // Add OTP modal state
   const navigate = useNavigate();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -137,8 +139,9 @@ export default function Signup() {
         }
         if (response.ok) {
           // Optionally store token if your API returns one, then navigate
-          localStorage.setItem('myToken', responseData.token);
-          navigate('/dashboard');
+          //localStorage.setItem('myToken', responseData.token);
+          //navigate('/dashboard');
+          setOtpOpen(true);
         }
       } catch (error) {
         console.error('An unexpected error occurred:', error);
@@ -212,6 +215,11 @@ export default function Signup() {
           </Box>
         </FormBox>
       </SignupContainer>
+      <OTP
+        open={otpOpen}
+        onClose={() => setOtpOpen(false)}
+        propUrl="http://localhost:4000/v1/verifyOTP"
+      />
     </ThemeProvider>
   );
 }
