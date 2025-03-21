@@ -6,7 +6,7 @@ const docSchema = new mongoose.Schema({
         trim: true,
         required: true,
     },
-    password: {
+    password: { // encrypted password
         type: String,
         required: true,
     },

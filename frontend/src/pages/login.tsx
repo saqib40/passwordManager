@@ -6,7 +6,7 @@ import {
   Button,
   Box,
   Link,
-  ThemeProvider,
+  ThemeProvider
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { createTheme } from '@mui/material/styles';
@@ -16,14 +16,14 @@ import OTP from '../components/otfverify';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#0d47a1', // Dark blue
+      main: '#0d47a1',
     },
     secondary: {
-      main: '#00c853', // Light green
+      main: '#00c853',
     },
     background: {
-      default: '#121212', // Dark background
-      paper: '#1e1e1e', // Dark card background
+      default: '#121212',
+      paper: '#1e1e1e',
     },
     text: {
       primary: '#ffffff',
@@ -41,19 +41,19 @@ const theme = createTheme({
 
 // Custom styles
 const LoginContainer = styled(Box)(({ theme }) => ({
-  minHeight: '100vh', // Use minHeight to ensure it grows with content if needed
+  minHeight: '100vh',
   width: '100vw',
-  margin: 0, // Reset any default margins
-  padding: 0, // Reset any default padding
+  margin: 0,
+  padding: 0,
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
   backgroundColor: theme.palette.background.default,
-  position: 'fixed', // Ensure it stays pinned to the viewport
+  position: 'fixed',
   top: 0,
   left: 0,
-  boxSizing: 'border-box', // Include padding/borders in size calculations
+  boxSizing: 'border-box',
 }));
 
 const FormBox = styled(Box)(({ theme }) => ({
@@ -96,12 +96,38 @@ const StyledLink = styled(Link)(({ theme }) => ({
   },
 }));
 
+const LoaderDots = styled(Box)({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  '& span': {
+    display: 'inline-block',
+    width: '8px',
+    height: '8px',
+    backgroundColor: '#ffffff',
+    borderRadius: '50%',
+    margin: '0 4px',
+    animation: 'dotFlashing 1s infinite linear alternate',
+  },
+  '& span:nth-child(2)': {
+    animationDelay: '0.2s',
+  },
+  '& span:nth-child(3)': {
+    animationDelay: '0.4s',
+  },
+  '@keyframes dotFlashing': {
+    '0%': { opacity: 0.2 },
+    '100%': { opacity: 1 },
+  },
+});
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
-  const [otpOpen, setOtpOpen] = useState(false); // Add OTP modal state
+  const [otpOpen, setOtpOpen] = useState(false);
+  const [loading, setLoading] = useState(false); // Add loading state
   const navigate = useNavigate();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -116,6 +142,7 @@ export default function Login() {
       setPasswordError(true);
     }
     if (email && password) {
+      setLoading(true); // Start loading
       try {
         const response = await fetch('http://localhost:4000/v1/login', {
           method: 'POST',
@@ -125,17 +152,18 @@ export default function Login() {
           body: JSON.stringify({ email, password }),
         });
         const responseData = await response.json();
-        console.log('The token is: ', responseData.token);
+        console.log('Login response:', responseData);
         if (response.status === 401) {
           alert(responseData.message);
         }
         if (response.ok) {
-          //localStorage.setItem('myToken', responseData.token);
-          //navigate('/dashboard');
           setOtpOpen(true);
         }
       } catch (error) {
         console.error('An unexpected error occurred:', error);
+        alert('An error occurred. Please try again.');
+      } finally {
+        setLoading(false); // Stop loading
       }
     }
   }
@@ -177,8 +205,17 @@ export default function Login() {
               color="secondary"
               type="submit"
               sx={{ mt: 2 }}
+              disabled={loading} // Disable button during loading
             >
-              Login
+              {loading ? (
+                <LoaderDots>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </LoaderDots>
+              ) : (
+                'Login'
+              )}
             </Button>
           </form>
           <Box sx={{ mt: 2, textAlign: 'center' }}>
@@ -196,10 +233,7 @@ export default function Login() {
       </LoginContainer>
       <OTP
         open={otpOpen}
-        onClose={() => {
-          setOtpOpen(false);
-          navigate('/dashboard'); // Navigate after OTP verification
-        }}
+        onClose={() => setOtpOpen(false)}
         propUrl="http://localhost:4000/v1/verifyLoginOTP"
       />
     </ThemeProvider>

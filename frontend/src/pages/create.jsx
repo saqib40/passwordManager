@@ -5,14 +5,12 @@ import {
   TextField,
   Button,
   Box,
-  Link,
   ThemeProvider,
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { createTheme } from '@mui/material/styles';
-import OTP from '../components/otfverify';
 
-// Custom theme
+// Custom theme (same as Login)
 const theme = createTheme({
   palette: {
     primary: {
@@ -39,8 +37,8 @@ const theme = createTheme({
   },
 });
 
-// Custom styles
-const SignupContainer = styled(Box)(({ theme }) => ({
+// Custom styles (adapted from Login)
+const CreateContainer = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
   width: '100vw',
   margin: 0,
@@ -88,14 +86,6 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
   },
 }));
 
-const StyledLink = styled(Link)(({ theme }) => ({
-  color: theme.palette.secondary.main,
-  textDecoration: 'underline',
-  '&:hover': {
-    color: theme.palette.secondary.light,
-  },
-}));
-
 const LoaderDots = styled(Box)({
   display: 'flex',
   justifyContent: 'center',
@@ -121,89 +111,70 @@ const LoaderDots = styled(Box)({
   },
 });
 
-export default function Signup() {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
+export default function Create() {
+  const [title, setTitle] = useState('');
   const [password, setPassword] = useState('');
-  const [usernameError, setUsernameError] = useState(false);
-  const [emailError, setEmailError] = useState(false);
+  const [titleError, setTitleError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
-  const [otpOpen, setOtpOpen] = useState(false);
-  const [loading, setLoading] = useState(false); // Add loading state
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    setUsernameError(false);
-    setEmailError(false);
+    setTitleError(false);
     setPasswordError(false);
 
-    if (username === '') {
-      setUsernameError(true);
-    }
-    if (email === '') {
-      setEmailError(true);
+    if (title === '') {
+      setTitleError(true);
     }
     if (password === '') {
       setPasswordError(true);
     }
-
-    if (username && email && password) {
-      setLoading(true); // Start loading
+    if (title && password) {
+      setLoading(true);
       try {
-        const response = await fetch('http://localhost:4000/v1/signup', {
+        // Placeholder for backend API call
+        const response = await fetch('http://localhost:4000/v1/create-password', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ username, email, password }),
+          body: JSON.stringify({ title, password }),
         });
         const responseData = await response.json();
-        console.log('Signup response:', responseData);
-
-        if (response.status === 400 || response.status === 409) {
+        console.log('Create response:', responseData);
+        if (response.status === 400) {
           alert(responseData.message);
         }
         if (response.ok) {
-          setOtpOpen(true);
+          navigate('/dashboard'); // Redirect to dashboard on success
         }
       } catch (error) {
         console.error('An unexpected error occurred:', error);
-        alert('Signup failed. Please try again.');
+        alert('An error occurred. Please try again.');
       } finally {
-        setLoading(false); // Stop loading
+        setLoading(false);
       }
     }
   }
 
   return (
     <ThemeProvider theme={theme}>
-      <SignupContainer>
+      <CreateContainer>
         <FormBox>
           <Typography variant="h2" align="center" gutterBottom>
-            Sign Up
+            Create Password
           </Typography>
           <form noValidate autoComplete="off" onSubmit={handleSubmit}>
             <StyledTextField
-              onChange={(e) => setUsername(e.target.value)}
-              label="Username"
+              onChange={(e) => setTitle(e.target.value)}
+              label="Title"
               variant="outlined"
               color="secondary"
               required
               fullWidth
-              error={usernameError}
-              helperText={usernameError ? 'Username is required' : ''}
-              sx={{ mb: 3 }}
-            />
-            <StyledTextField
-              onChange={(e) => setEmail(e.target.value)}
-              label="Email Address"
-              variant="outlined"
-              color="secondary"
-              required
-              fullWidth
-              error={emailError}
-              helperText={emailError ? 'Email is required' : ''}
+              error={titleError}
+              helperText={titleError ? 'Title is required' : ''}
               sx={{ mb: 3 }}
             />
             <StyledTextField
@@ -224,7 +195,7 @@ export default function Signup() {
               color="secondary"
               type="submit"
               sx={{ mt: 2 }}
-              disabled={loading} // Disable button during loading
+              disabled={loading}
             >
               {loading ? (
                 <LoaderDots>
@@ -233,28 +204,12 @@ export default function Signup() {
                   <span></span>
                 </LoaderDots>
               ) : (
-                'Sign Up'
+                'Create'
               )}
             </Button>
           </form>
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
-            <StyledLink
-              href="#"
-              onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                e.preventDefault();
-                navigate('/login');
-              }}
-            >
-              Already have an account? Login here
-            </StyledLink>
-          </Box>
         </FormBox>
-      </SignupContainer>
-      <OTP
-        open={otpOpen}
-        onClose={() => setOtpOpen(false)}
-        propUrl="http://localhost:4000/v1/verifyOTP"
-      />
+      </CreateContainer>
     </ThemeProvider>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Add useNavigate
+import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
   DialogTitle,
@@ -9,6 +9,7 @@ import {
   Button,
   ThemeProvider,
   Typography,
+  Box,
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { createTheme } from '@mui/material/styles';
@@ -64,6 +65,31 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
   },
 }));
 
+const LoaderDots = styled(Box)({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  '& span': {
+    display: 'inline-block',
+    width: '8px',
+    height: '8px',
+    backgroundColor: '#ffffff',
+    borderRadius: '50%',
+    margin: '0 4px',
+    animation: 'dotFlashing 1s infinite linear alternate',
+  },
+  '& span:nth-child(2)': {
+    animationDelay: '0.2s',
+  },
+  '& span:nth-child(3)': {
+    animationDelay: '0.4s',
+  },
+  '@keyframes dotFlashing': {
+    '0%': { opacity: 0.2 },
+    '100%': { opacity: 1 },
+  },
+});
+
 interface OTPProps {
   open: boolean;
   onClose: () => void;
@@ -73,9 +99,9 @@ interface OTPProps {
 export default function OTP({ open, onClose, propUrl }: OTPProps) {
   const [otp, setOtp] = useState('');
   const [otpError, setOtpError] = useState(false);
-  const navigate = useNavigate(); // Add navigation hook
+  const [loading, setLoading] = useState(false); // Add loading state
+  const navigate = useNavigate();
 
-  // Toggle this flag to simulate backend response for testing
   const simulateBackend = false;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -87,18 +113,20 @@ export default function OTP({ open, onClose, propUrl }: OTPProps) {
       return;
     }
 
+    setLoading(true); // Start loading
     if (simulateBackend) {
       console.log(`Simulated POST to ${propUrl} with OTP: ${otp}`);
       setTimeout(() => {
-        const mockResponse = { success: true, token: 'mock-token-123' }; // Mock token
+        const mockResponse = { success: true, token: 'mock-token-123' };
         if (mockResponse.success) {
-          localStorage.setItem('myToken', mockResponse.token); // Store mock token
+          localStorage.setItem('myToken', mockResponse.token);
           alert('OTP verified successfully (simulated)');
           onClose();
-          navigate('/dashboard'); // Navigate after verification
+          navigate('/dashboard');
         } else {
           alert('Invalid OTP (simulated)');
         }
+        setLoading(false); // Stop loading
       }, 500);
       return;
     }
@@ -115,10 +143,10 @@ export default function OTP({ open, onClose, propUrl }: OTPProps) {
 
       if (response.ok) {
         console.log('OTP verification successful:', responseData);
-        localStorage.setItem('myToken', responseData.token); // Store token from backend
+        localStorage.setItem('myToken', responseData.token);
         alert('OTP verified successfully');
         onClose();
-        navigate('/dashboard'); // Navigate after verification
+        navigate('/dashboard');
       } else {
         console.error('OTP verification failed:', responseData);
         alert(responseData.message || 'Invalid OTP');
@@ -126,6 +154,8 @@ export default function OTP({ open, onClose, propUrl }: OTPProps) {
     } catch (error) {
       console.error('Error verifying OTP:', error);
       alert('An error occurred. Please try again.');
+    } finally {
+      setLoading(false); // Stop loading
     }
   }
 
@@ -168,8 +198,17 @@ export default function OTP({ open, onClose, propUrl }: OTPProps) {
               color="secondary"
               type="submit"
               sx={{ width: '50%' }}
+              disabled={loading} // Disable button during loading
             >
-              Verify OTP
+              {loading ? (
+                <LoaderDots>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </LoaderDots>
+              ) : (
+                'Verify OTP'
+              )}
             </Button>
           </DialogActions>
         </form>

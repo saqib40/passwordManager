@@ -1,8 +1,13 @@
 const express = require("express");
 const router = express.Router();
 
-const {login, signup, verifyOTP, verifyLoginOTP} = require("../controllers/authA");
-const {create, view, auth} = require("../protected/authB");
+const {login, verifyLoginOTP} = require("../controllers/login");
+const {signup, verifyOTP} = require("../controllers/signup");
+
+const auth = require("../protected/auth");
+const create = require("../protected/create");
+const view = require("../protected/view");
+const remove = require("../protected/remove");
 
 router.post("/verifyOTP", verifyOTP); // during signup
 router.post("/verifyLoginOTP", verifyLoginOTP); // during login
